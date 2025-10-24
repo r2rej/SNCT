@@ -23,6 +23,24 @@ void timer0_init(void) {
     TIMSK0 = (1 << OCIE0A);
 }
 
+void nrf_init_tx(void) {
+    CE_LOW();
+    _delay_ms(5);
+    nrf_write_reg(EN_AA, 0x00);
+    nrf_write_reg(RF_CH, 76);
+    nrf_write_reg(RF_SETUP, 0x06);
+    nrf_write_reg(CONFIG, 0x0A);  // PWR_UP, TX mode
+    nrf_flush_tx();
+    CE_HIGH();
+}
+
+static void nrf_set_tx_address(const uint8_t *addr) {
+    CE_LOW();
+    nrf_write_buf(TX_ADDR, addr, 5);
+    nrf_write_buf(RX_ADDR_P0, addr, 5); // needed for ACK compatibility
+    CE_HIGH();
+}
+
 int main(void) {
     spi_init();
     nrf_init_tx();

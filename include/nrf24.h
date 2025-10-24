@@ -78,7 +78,7 @@ static inline void nrf_flush_rx(void) {
     CSN_LOW(); spi_tx(FLUSH_RX); CSN_HIGH();
 }
 
-static inline void nrf_send_payload(const uint8_t *data, uint8_t len) {
+static inline void nrf_send_payload(const volatile uint8_t *data, uint8_t len) {
     CE_LOW();
     CSN_LOW();
     spi_tx(W_TX_PAYLOAD);
