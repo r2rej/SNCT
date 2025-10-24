@@ -5,10 +5,10 @@
 #include <util/delay.h>
 
 // Pin definitions
-#define NES_CLK   PD2
-#define NES_LATCH PD3
-#define NES1_DATA PD4
-#define NES2_DATA PD5
+#define NES_CLK   PD4  // Digital 4
+#define NES_LATCH PD5  // Digital 5
+#define NES1_DATA PD6 // Digital 6
+#define NES2_DATA PD7 // Digital 7
 
 void nes_init(void);
 uint8_t nes_read(uint8_t data_pin);
