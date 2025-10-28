@@ -51,11 +51,7 @@ typedef enum {
     MOV_FORWARD_LEFT,      // Curva suave: dir frente, esq parado
     MOV_FORWARD_RIGHT,     // Curva suave: esq frente, dir parado
     MOV_BACKWARD_LEFT,     // Curva ré: dir trás, esq parado
-    MOV_BACKWARD_RIGHT,    // Curva ré: esq trás, dir parado
-    MOV_PIVOT_LEFT,        // Pivô: esq trás, dir frente (giro mais fechado)
-    MOV_PIVOT_RIGHT,       // Pivô: esq frente, dir trás (giro mais fechado)
-    MOV_DRIFT_LEFT,        // Derrapagem: esq trás lento, dir frente rápido
-    MOV_DRIFT_RIGHT        // Derrapagem: esq frente rápido, dir trás lento
+    MOV_BACKWARD_RIGHT    // Curva ré: esq trás, dir parado
 } movement_t;
 
 typedef union {
@@ -101,21 +97,6 @@ void set_motors(uint8_t left_dir, uint8_t right_dir) {
     }
 }
 
-// typedef struct {
-//     uint8_t left : 2;  // 2 bits para motor esquerdo
-//     uint8_t right : 2; // 2 bits para motor direito
-// } motor_cmd_t;
-
-// void set_motors_compact(motor_cmd_t cmd) {
-//     // Combina tudo em uma operação
-//     MOTOR_OUT = (MOTOR_OUT & 0xC3) |        // Mantém outros bits
-//                ((cmd.left & 1) << MOTOR_IN1) |     // Bit 0 -> IN1
-//                ((cmd.left >> 1) << MOTOR_IN2) |    // Bit 1 -> IN2
-//                ((cmd.right & 1) << MOTOR_IN3) |    // Bit 0 -> IN3
-//                ((cmd.right >> 1) << MOTOR_IN4);    // Bit 1 -> IN4
-// }
-
-
 void movement(movement_t mov) {
     switch(mov) {
         case MOV_FORWARD:
@@ -141,18 +122,6 @@ void movement(movement_t mov) {
             break;
         case MOV_BACKWARD_RIGHT:
             set_motors(2, 0); // Apenas motor esquerdo para trás
-            break;
-        case MOV_PIVOT_LEFT:
-            set_motors(2, 1); // Mesmo que TURN_LEFT (para consistência)
-            break;
-        case MOV_PIVOT_RIGHT:
-            set_motors(1, 2); // Mesmo que TURN_RIGHT (para consistência)
-            break;
-        case MOV_DRIFT_LEFT:
-            set_motors(2, 1); // Mesmo que TURN_LEFT (velocidade controlada por PWM)
-            break;
-        case MOV_DRIFT_RIGHT:
-            set_motors(1, 2); // Mesmo que TURN_RIGHT (velocidade controlada por PWM)
             break;
         default: // MOV_STOP
             set_motors(0, 0);
@@ -306,7 +275,6 @@ void motor_right_speed(uint8_t speed) {
 }
 void pwm_init(void) {
     // Configurar Timer0 para PWM nos pinos OC0A (PD6) e OC0B (PD5)
-
     TCCR0A = (1 << WGM00) | (1 << WGM01) | (1 << COM0A1) | (1 << COM0B1);
     TCCR0B = (1 << CS01);
 }
@@ -347,13 +315,11 @@ int main(void) {
            rx_address[3], rx_address[4]);
     printf("Waiting for commands...\r\n\n");
 
-	// MOTOR_OUT |= (1 << MOTOR_IN1) | (0 << MOTOR_IN2) |
-		// (1 << MOTOR_IN3) | (0 << MOTOR_IN4);
 	while (1) {
-	if (flag.readData) {
-		flag.readData = false;
-		process_command(cmd);
-	}
+		if (flag.readData) {
+			flag.readData = false;
+			process_command(cmd);
+		}
 	}
 	return 0;
 }
@@ -393,3 +359,4 @@ ISR(INT0_vect) {
         printf("IRQ: TX Success\r\n");
     }
 }
+
